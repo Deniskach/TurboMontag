@@ -1,0 +1,17 @@
+Requirement already satisfied: albumentations in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (2.0.8)
+Requirement already satisfied: numpy>=1.24.4 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albumentations) (2.2.6)
+Requirement already satisfied: scipy>=1.10.0 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albumentations) (1.16.3)
+Requirement already satisfied: PyYAML in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albumentations) (6.0.3)
+Requirement already satisfied: pydantic>=2.9.2 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albumentations) (2.12.3)
+Requirement already satisfied: albucore==0.0.24 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albumentations) (0.0.24)
+Collecting opencv-python-headless>=4.9.0.80 (from albumentations)
+  Using cached opencv_python_headless-4.12.0.88-cp37-abi3-win_amd64.whl.metadata (20 kB)
+Requirement already satisfied: stringzilla>=3.10.4 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albucore==0.0.24->albumentations) (4.2.3)
+Requirement already satisfied: simsimd>=5.9.2 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from albucore==0.0.24->albumentations) (6.5.3)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from pydantic>=2.9.2->albumentations) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.4 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from pydantic>=2.9.2->albumentations) (2.41.4)
+Requirement already satisfied: typing-extensions>=4.14.1 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from pydantic>=2.9.2->albumentations) (4.15.0)
+Requirement already satisfied: typing-inspection>=0.4.2 in c:\users\acer\desktop\turbomontage\.venv\lib\site-packages (from pydantic>=2.9.2->albumentations) (0.4.2)
+Using cached opencv_python_headless-4.12.0.88-cp37-abi3-win_amd64.whl (38.9 MB)
+Installing collected packages: opencv-python-headless
+Successfully installed opencv-python-headless-4.12.0.88

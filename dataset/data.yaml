@@ -1,0 +1,13 @@
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 4
+names: ['Burn Mark', 'Coating_defects', 'Crack', 'EROSION']
+
+roboflow:
+  workspace: rpyolov7
+  project: turbine-blade-detection
+  version: 4
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/rpyolov7/turbine-blade-detection/dataset/4

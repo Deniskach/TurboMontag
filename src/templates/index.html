@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>АО "Завод ТАГАТ" - Контроль качества ГТД</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #2c3e50;
+        --secondary: #34495e;
+        --accent: #e74c3c;
+        --success: #27ae60;
+        --warning: #f39c12;
+        --danger: #c0392b;
+      }
+
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .main-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        min-height: 90vh;
+      }
+
+      .header {
+        background: var(--primary);
+        color: white;
+        border-radius: 20px 20px 0 0;
+        padding: 20px 30px;
+        margin: -12px;
+      }
+
+      .logo {
+        font-weight: 700;
+        font-size: 1.5rem;
+      }
+
+      .system-name {
+        font-size: 1.8rem;
+        font-weight: 300;
+      }
+
+      .input-panel {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px;
+        border-left: 5px solid var(--accent);
+      }
+
+      .image-container {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s;
+        background: #fafafa;
+        overflow: hidden;
+      }
+
+      .image-container:hover {
+        border-color: var(--accent);
+        background: #f0f8ff;
+      }
+
+      .result-image {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .defect-table {
+        font-size: 0.9rem;
+      }
+
+      .defect-critical {
+        border-left: 4px solid var(--danger);
+      }
+      .defect-high {
+        border-left: 4px solid var(--warning);
+      }
+      .defect-medium {
+        border-left: 4px solid var(--success);
+      }
+
+      .confidence-bar {
+        height: 8px;
+        background: #ecf0f1;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .confidence-fill {
+        height: 100%;
+        border-radius: 4px;
+      }
+
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+      }
+
+      .btn-tagat {
+        background: linear-gradient(135deg, var(--accent) 0%, #c0392b 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+
+      .mode-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .mode-btn {
+        flex: 1;
+        padding: 10px;
+        border: 2px solid #dee2e6;
+        background: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .mode-btn.active {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+      }
+
+      .mode-btn:hover:not(.active) {
+        border-color: var(--accent);
+      }
+
+      .video-preview {
+        max-width: 100%;
+        border-radius: 10px;
+        background: #000;
+      }
+
+      .video-controls {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .preview-container {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container main-container">
+      <!-- Шапка -->
+      <div class="header">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <div class="logo">АО "ЗАВОД ТАГАТ"</div>
+            <div class="system-name">Система контроля качества ГТД</div>
+          </div>
+          <div class="col-md-6 text-end">
+            <div id="currentDateTime"></div>
+            <div>Оператор: <strong>Иванов А.В.</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Основной контент -->
+      <div class="container-fluid mt-4">
+        <div class="row">
+          <!-- Левая колонка - Ввод данных -->
+          <div class="col-lg-4">
+            <div class="input-panel">
+              <h5 class="mb-4">📁 ИСТОЧНИК ДАННЫХ</h5>
+
+              <!-- Переключатель режимов -->
+              <div class="mode-selector">
+                <button id="photoModeBtn" class="mode-btn active">
+                  <i class="fas fa-camera me-2"></i>Режим: Фото
+                </button>
+                <button id="videoModeBtn" class="mode-btn">
+                  <i class="fas fa-video me-2"></i>Режим: Видео
+                </button>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">№ Двигателя</label>
+                <select class="form-select" id="engineNumber">
+                  <option value="">Выберите двигатель</option>
+                  <option value="ТАГАТ-2024-001">ТАГАТ-2024-001</option>
+                  <option value="ТАГАТ-2024-002">ТАГАТ-2024-002</option>
+                  <option value="ТАГАТ-2024-003">ТАГАТ-2024-003</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">№ Лопатки</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="bladeNumber"
+                  placeholder="Например: LP-045"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Дата осмотра</label>
+                <input type="date" class="form-control" id="inspectionDate" />
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Оператор</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="operator"
+                  value="Иванов А.В."
+                  readonly
+                />
+              </div>
+
+              <!-- Блок для фото -->
+              <div id="photoUploadBlock">
+                <div class="image-container mb-3">
+                  <i class="fas fa-camera fa-3x text-muted mb-3"></i>
+                  <p class="text-muted">Перетащите изображение или</p>
+                  <input
+                    type="file"
+                    id="imageUpload"
+                    accept="image/*"
+                    class="d-none"
+                  />
+                  <button
+                    class="btn btn-outline-primary"
+                    onclick="document.getElementById('imageUpload').click()"
+                  >
+                    📎 Выберите изображение
+                  </button>
+                  <div id="fileName" class="mt-2 small text-muted"></div>
+                </div>
+              </div>
+
+              <!-- Блок для видео -->
+              <div id="videoUploadBlock" class="hidden">
+                <div class="image-container mb-3">
+                  <i class="fas fa-video fa-3x text-muted mb-3"></i>
+                  <p class="text-muted">Подключите эндоскоп</p>
+                  <div class="video-controls">
+                    <button class="btn btn-outline-primary" id="startVideoBtn">
+                      <i class="fas fa-play me-2"></i>Запустить видео
+                    </button>
+                    <button
+                      class="btn btn-outline-danger hidden"
+                      id="stopVideoBtn"
+                    >
+                      <i class="fas fa-stop me-2"></i>Остановить
+                    </button>
+                  </div>
+                  <div class="mt-3">
+                    <p class="text-muted small">Или загрузите видеофайл</p>
+                    <input
+                      type="file"
+                      id="videoFileUpload"
+                      accept="video/*"
+                      class="d-none"
+                    />
+                    <button
+                      class="btn btn-outline-secondary btn-sm"
+                      onclick="document.getElementById('videoFileUpload').click()"
+                    >
+                      <i class="fas fa-upload me-1"></i>Загрузить видео
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button class="btn btn-tagat w-100" id="analyzeBtn">
+                <span
+                  class="spinner-border spinner-border-sm me-2 d-none"
+                  id="spinner"
+                ></span>
+                <span id="analyzeBtnText">🚀 ЗАГРУЗИТЬ И ПРОАНАЛИЗИРОВАТЬ</span>
+              </button>
+            </div>
+
+            <!-- Статистика -->
+            <div class="row mt-4" id="statsSection" style="display: none">
+              <div class="col-6 mb-3">
+                <div class="stat-card">
+                  <div class="h4 mb-1" id="totalDefects">0</div>
+                  <small>Всего дефектов</small>
+                </div>
+              </div>
+              <div class="col-6 mb-3">
+                <div class="stat-card">
+                  <div class="h4 mb-1" id="criticalDefects">0</div>
+                  <small>Критические</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Правая колонка - Результаты -->
+          <div class="col-lg-8">
+            <!-- Область просмотра и анализа -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">👁️ ОБЛАСТЬ ПРОСМОТРА И АНАЛИЗА</h6>
+              </div>
+              <div class="card-body">
+                <div class="preview-container">
+                  <!-- Для фото -->
+                  <img
+                    id="staticImagePreview"
+                    class="result-image hidden"
+                    src=""
+                    alt="Исходное изображение"
+                  />
+
+                  <!-- Для видео -->
+                  <video
+                    id="liveVideoPreview"
+                    class="video-preview hidden"
+                    autoplay
+                    muted
+                    playsinline
+                  ></video>
+
+                  <!-- Для загруженного видеофайла -->
+                  <video
+                    id="fileVideoPreview"
+                    class="video-preview hidden"
+                    controls
+                  ></video>
+
+                  <!-- Сообщение когда ничего не загружено -->
+                  <div id="noSourceMessage" class="text-muted">
+                    <i class="fas fa-image fa-4x mb-3"></i>
+                    <p>Источник данных не выбран</p>
+                  </div>
+                </div>
+
+                <div
+                  id="sourceInfo"
+                  class="small text-muted mt-2 text-center"
+                ></div>
+
+                <!-- Контроль для видео -->
+                <div id="videoCaptureControls" class="text-center mt-3 hidden">
+                  <button class="btn btn-primary" id="captureFrameBtn">
+                    <i class="fas fa-camera me-2"></i>Сделать снимок для анализа
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Результат анализа -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">🔍 РЕЗУЛЬТАТ АНАЛИЗА</h6>
+              </div>
+              <div class="card-body text-center">
+                <img
+                  id="resultImage"
+                  class="result-image"
+                  src=""
+                  style="display: none"
+                />
+                <div id="resultPlaceholder" class="text-muted">
+                  <i class="fas fa-search fa-4x mb-3"></i>
+                  <p>Ожидание анализа</p>
+                </div>
+                <div id="analysisInfo" class="small text-muted mt-2"></div>
+              </div>
+            </div>
+
+            <!-- Протокол дефектов -->
+            <div class="card">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">📊 ПРОТОКОЛ ДЕФЕКТОВ</h6>
+              </div>
+              <div class="card-body">
+                <div id="defectsTable">
+                  <div class="text-center text-muted p-4">
+                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                    <p>Протокол будет сформирован после анализа</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Панель действий -->
+            <div class="row mt-3" id="actionPanel" style="display: none">
+              <div class="col">
+                <button class="btn btn-success">📥 Сохранить протокол</button>
+                <button class="btn btn-primary">🖨️ Печать отчета</button>
+                <button class="btn btn-info">📊 Экспорт в Excel</button>
+                <button class="btn btn-outline-secondary" id="newAnalysisBtn">
+                  🗑️ Новый анализ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE_URL = 'http://localhost:8000';
+      // Текущий режим работы
+      let currentMode = 'photo';
+      let videoStream = null;
+      let isAnalyzing = false;
+
+      // Элементы управления
+      const photoModeBtn = document.getElementById('photoModeBtn');
+      const videoModeBtn = document.getElementById('videoModeBtn');
+      const photoUploadBlock = document.getElementById('photoUploadBlock');
+      const videoUploadBlock = document.getElementById('videoUploadBlock');
+      const staticImagePreview = document.getElementById('staticImagePreview');
+      const liveVideoPreview = document.getElementById('liveVideoPreview');
+      const fileVideoPreview = document.getElementById('fileVideoPreview');
+      const noSourceMessage = document.getElementById('noSourceMessage');
+      const sourceInfo = document.getElementById('sourceInfo');
+      const videoCaptureControls = document.getElementById(
+        'videoCaptureControls'
+      );
+      const captureFrameBtn = document.getElementById('captureFrameBtn');
+      const startVideoBtn = document.getElementById('startVideoBtn');
+      const stopVideoBtn = document.getElementById('stopVideoBtn');
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      const analyzeBtnText = document.getElementById('analyzeBtnText');
+      const newAnalysisBtn = document.getElementById('newAnalysisBtn');
+
+      // Обновление даты и времени
+      function updateDateTime() {
+        const now = new Date();
+        const options = {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        };
+        document.getElementById('currentDateTime').textContent =
+          now.toLocaleDateString('ru-RU', options);
+      }
+      setInterval(updateDateTime, 60000);
+      updateDateTime();
+
+      // Установка сегодняшней даты
+      document.getElementById('inspectionDate').valueAsDate = new Date();
+
+      // Переключение режимов
+      photoModeBtn.addEventListener('click', () => switchMode('photo'));
+      videoModeBtn.addEventListener('click', () => switchMode('video'));
+
+      function switchMode(mode) {
+        currentMode = mode;
+
+        // Обновляем кнопки
+        photoModeBtn.classList.toggle('active', mode === 'photo');
+        videoModeBtn.classList.toggle('active', mode === 'video');
+
+        // Показываем/скрываем блоки ввода
+        photoUploadBlock.classList.toggle('hidden', mode !== 'photo');
+        videoUploadBlock.classList.toggle('hidden', mode !== 'video');
+
+        // Обновляем текст кнопки анализа
+        analyzeBtnText.textContent =
+          mode === 'photo'
+            ? '🚀 ЗАГРУЗИТЬ И ПРОАНАЛИЗИРОВАТЬ'
+            : '🎯 АНАЛИЗИРОВАТЬ ТЕКУЩИЙ КАДР';
+
+        // Очищаем область просмотра при переключении
+        clearPreview();
+
+        // Останавливаем видео при переключении с видео-режима
+        if (mode !== 'video' && videoStream) {
+          stopVideoStream();
+        }
+      }
+
+      // Очистка области просмотра
+      function clearPreview() {
+        staticImagePreview.classList.add('hidden');
+        liveVideoPreview.classList.add('hidden');
+        fileVideoPreview.classList.add('hidden');
+        noSourceMessage.classList.remove('hidden');
+        videoCaptureControls.classList.add('hidden');
+        sourceInfo.textContent = '';
+
+        // Сбрасываем результат анализа
+        document.getElementById('resultImage').style.display = 'none';
+        document.getElementById('resultPlaceholder').style.display = 'block';
+        document.getElementById('analysisInfo').textContent = '';
+      }
+
+      // Обработка загрузки изображения (фото-режим)
+      document
+        .getElementById('imageUpload')
+        .addEventListener('change', function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            document.getElementById('fileName').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              staticImagePreview.src = e.target.result;
+              staticImagePreview.classList.remove('hidden');
+              noSourceMessage.classList.add('hidden');
+              fileVideoPreview.classList.add('hidden');
+              liveVideoPreview.classList.add('hidden');
+
+              // Показываем информацию об изображении
+              const image = new Image();
+              image.onload = function () {
+                sourceInfo.textContent = `Фото • Размер: ${image.width}x${
+                  image.height
+                } • Формат: ${file.type.split('/')[1].toUpperCase()}`;
+              };
+              image.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+      // Обработка загрузки видеофайла
+      document
+        .getElementById('videoFileUpload')
+        .addEventListener('change', function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const url = URL.createObjectURL(file);
+            fileVideoPreview.src = url;
+            fileVideoPreview.classList.remove('hidden');
+            liveVideoPreview.classList.add('hidden');
+            staticImagePreview.classList.add('hidden');
+            noSourceMessage.classList.add('hidden');
+            videoCaptureControls.classList.remove('hidden');
+
+            sourceInfo.textContent = `Видеофайл • ${file.name} • ${(
+              file.size /
+              (1024 * 1024)
+            ).toFixed(2)} MB`;
+          }
+        });
+
+      // Запуск видео с камеры
+      startVideoBtn.addEventListener('click', async () => {
+        try {
+          videoStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              facingMode: { ideal: 'environment' }, // Предпочтение задней камеры
+            },
+          });
+
+          liveVideoPreview.srcObject = videoStream;
+          liveVideoPreview.classList.remove('hidden');
+          fileVideoPreview.classList.add('hidden');
+          staticImagePreview.classList.add('hidden');
+          noSourceMessage.classList.add('hidden');
+          videoCaptureControls.classList.remove('hidden');
+
+          startVideoBtn.classList.add('hidden');
+          stopVideoBtn.classList.remove('hidden');
+
+          sourceInfo.textContent = 'Эндоскоп (живое видео) • 720p';
+        } catch (err) {
+          console.error('Ошибка доступа к камере:', err);
+          alert(
+            'Не удалось подключиться к эндоскопу. Проверьте разрешения и подключение камеры.'
+          );
+        }
+      });
+
+      // Остановка видео
+      stopVideoBtn.addEventListener('click', () => {
+        stopVideoStream();
+      });
+
+      function stopVideoStream() {
+        if (videoStream) {
+          videoStream.getTracks().forEach((track) => track.stop());
+          videoStream = null;
+        }
+        liveVideoPreview.srcObject = null;
+        liveVideoPreview.classList.add('hidden');
+        startVideoBtn.classList.remove('hidden');
+        stopVideoBtn.classList.add('hidden');
+        videoCaptureControls.classList.add('hidden');
+        noSourceMessage.classList.remove('hidden');
+        sourceInfo.textContent = '';
+      }
+
+      // Снимок кадра для анализа (для видео-режима)
+      captureFrameBtn.addEventListener('click', () => {
+        if (currentMode === 'video') {
+          // Используем активное видео (живое или из файла)
+          const videoElement = liveVideoPreview.classList.contains('hidden')
+            ? fileVideoPreview
+            : liveVideoPreview;
+
+          if (videoElement.srcObject || videoElement.src) {
+            captureAndAnalyzeFrame(videoElement);
+          }
+        }
+      });
+
+      // Анализ изображения/кадра
+      analyzeBtn.addEventListener('click', async function () {
+        if (currentMode === 'photo') {
+          // Анализ загруженного фото
+          const imageData = staticImagePreview.src;
+          if (!imageData || imageData === '') {
+            alert('Сначала загрузите изображение!');
+            return;
+          }
+          await analyzeImage(imageData);
+        } else if (currentMode === 'video') {
+          // Анализ текущего кадра видео
+          const videoElement = liveVideoPreview.classList.contains('hidden')
+            ? fileVideoPreview
+            : liveVideoPreview;
+
+          if (!videoElement.srcObject && !videoElement.src) {
+            alert('Сначала запустите видео или загрузите видеофайл!');
+            return;
+          }
+          captureAndAnalyzeFrame(videoElement);
+        }
+      });
+
+      // Захват и анализ кадра из видео
+      function captureAndAnalyzeFrame(videoElement) {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth || videoElement.width;
+        canvas.height = videoElement.videoHeight || videoElement.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+        const frameData = canvas.toDataURL('image/jpeg', 0.9);
+        analyzeImage(frameData);
+      }
+
+      // Функция анализа изображения (заглушка)
+      async function analyzeImage(imageData) {
+        if (isAnalyzing) return;
+
+        isAnalyzing = true;
+        const spinner = document.getElementById('spinner');
+        spinner.classList.remove('d-none');
+        analyzeBtn.disabled = true;
+
+        try {
+          // Имитация анализа (замените на реальный вызов API)
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          // Показываем "результат" анализа
+          document.getElementById('resultImage').src = imageData;
+          document.getElementById('resultImage').style.display = 'block';
+          document.getElementById('resultPlaceholder').style.display = 'none';
+          document.getElementById('analysisInfo').textContent =
+            'Анализ завершен • Найдено дефектов: 3';
+
+          // Показываем статистику и панель действий
+          document.getElementById('statsSection').style.display = 'flex';
+          document.getElementById('actionPanel').style.display = 'block';
+          document.getElementById('totalDefects').textContent = '3';
+          document.getElementById('criticalDefects').textContent = '1';
+
+          // Обновляем протокол дефектов
+          updateDefectsTable();
+        } catch (error) {
+          console.error('Ошибка анализа:', error);
+          alert('Произошла ошибка при анализе изображения');
+        } finally {
+          isAnalyzing = false;
+          spinner.classList.add('d-none');
+          analyzeBtn.disabled = false;
+        }
+      }
+
+      // Обновление таблицы дефектов (заглушка)
+      function updateDefectsTable() {
+        const defectsTable = document.getElementById('defectsTable');
+        defectsTable.innerHTML = `
+          <table class="table table-striped defect-table">
+            <thead>
+              <tr>
+                <th>Тип дефекта</th>
+                <th>Координаты</th>
+                <th>Размер</th>
+                <th>Уровень критичности</th>
+                <th>Вероятность</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="defect-critical">
+                <td>Трещина</td>
+                <td>x: 245, y: 167</td>
+                <td>12.5 мм</td>
+                <td><span class="badge bg-danger">Критический</span></td>
+                <td>
+                  <div class="confidence-bar">
+                    <div class="confidence-fill bg-danger" style="width: 94%"></div>
+                  </div>
+                  <small>94%</small>
+                </td>
+              </tr>
+              <tr class="defect-high">
+                <td>Коррозия</td>
+                <td>x: 189, y: 234</td>
+                <td>8.2 мм</td>
+                <td><span class="badge bg-warning">Высокий</span></td>
+                <td>
+                  <div class="confidence-bar">
+                    <div class="confidence-fill bg-warning" style="width: 87%"></div>
+                  </div>
+                  <small>87%</small>
+                </td>
+              </tr>
+              <tr class="defect-medium">
+                <td>Загрязнение</td>
+                <td>x: 312, y: 145</td>
+                <td>15.1 мм</td>
+                <td><span class="badge bg-success">Средний</span></td>
+                <td>
+                  <div class="confidence-bar">
+                    <div class="confidence-fill bg-success" style="width: 76%"></div>
+                  </div>
+                  <small>76%</small>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        `;
+      }
+
+      // Кнопка нового анализа
+      newAnalysisBtn.addEventListener('click', () => {
+        // Сбрасываем все к исходному состоянию
+        clearPreview();
+        document.getElementById('statsSection').style.display = 'none';
+        document.getElementById('actionPanel').style.display = 'none';
+        document.getElementById('defectsTable').innerHTML = `
+          <div class="text-center text-muted p-4">
+            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+            <p>Протокол будет сформирован после анализа</p>
+          </div>
+        `;
+
+        // Очищаем поля ввода
+        document.getElementById('imageUpload').value = '';
+        document.getElementById('videoFileUpload').value = '';
+        document.getElementById('fileName').textContent = '';
+
+        // Останавливаем видео если запущено
+        if (videoStream) {
+          stopVideoStream();
+        }
+      });
+
+      // Обработка перетаскивания файлов
+      document.addEventListener('DOMContentLoaded', function () {
+        const dropZone = document.querySelector('.image-container');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+          dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach((eventName) => {
+          dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach((eventName) => {
+          dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+          dropZone.style.borderColor = 'var(--accent)';
+          dropZone.style.background = '#f0f8ff';
+        }
+
+        function unhighlight() {
+          dropZone.style.borderColor = '#dee2e6';
+          dropZone.style.background = '#fafafa';
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+
+          if (files.length > 0) {
+            if (currentMode === 'photo') {
+              document.getElementById('imageUpload').files = files;
+              const event = new Event('change');
+              document.getElementById('imageUpload').dispatchEvent(event);
+            } else {
+              document.getElementById('videoFileUpload').files = files;
+              const event = new Event('change');
+              document.getElementById('videoFileUpload').dispatchEvent(event);
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
